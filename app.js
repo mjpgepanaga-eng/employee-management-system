@@ -51,9 +51,14 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
-module.exports = app;
+// ---------------- Start Server (Local only) ----------------
+const PORT = process.env.PORT || 8000;
 
-// ---------------- Start Server ----------------
-app.listen(8000, () => {
-  console.log("Server started on http://localhost:8000");
-});
+// Only start listening if not in Vercel (where it's handled automatically)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server started on port ${PORT}`);
+  });
+}
+
+module.exports = app;
