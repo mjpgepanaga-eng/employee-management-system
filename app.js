@@ -1,28 +1,31 @@
+require('dotenv').config(); // Load environment variables from .env
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-const bodyParser = require('body-parser');
+var employees = require('./routes/employees');
 
 var app = express();
 
-// ---------------- Body Parser ----------------
+// ---------------- Parse URL-encoded bodies ----------------
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// ---------------- Mongoose Setup ----------------
-const mongoose = require('mongoose');
-var employees = require('./routes/employees');
-
-// ✅ UPDATED: Connect to MongoDB Atlas instead of local
-mongoose.connect("mongodb+srv://mjpgepanaga_db_user:MyuMomochi21@cluster0.phecijk.mongodb.net/nodecrud?retryWrites=true&w=majority&appName=Cluster0")
+// ---------------- MongoDB (Mongoose) Setup ----------------
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("✅ Connected to MongoDB Atlas"))
   .catch(err => console.error("❌ MongoDB connection error:", err));
 
 // ---------------- Routes ----------------
 app.use('/employees', employees);
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
 
 // ---------------- View Engine Setup ----------------
 app.set('views', path.join(__dirname, 'views'));
@@ -33,9 +36,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 
 // ---------------- Error Handling ----------------
 app.use(function (req, res, next) {
@@ -52,10 +52,10 @@ app.use(function (err, req, res, next) {
 // ---------------- Start Server ----------------
 const PORT = process.env.PORT || 8000;
 
-// Only start listening if not in Vercel (where it's handled automatically)
+// Only start listening if running locally (Vercel handles this automatically)
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`🚀 Server started on port ${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
   });
 }
 
